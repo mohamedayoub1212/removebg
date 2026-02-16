@@ -6,7 +6,7 @@ Recebe pedidos de sites externos via HTTP.
 
 import io
 import os
-from fastapi import FastAPI, File, Form, HTTPException, UploadFile
+from fastapi import APIRouter, FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response
 from PIL import Image
@@ -22,36 +22,37 @@ app = FastAPI(
 # CORS - permite requisições de sites externos
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Em produção: liste os domínios permitidos
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+router = APIRouter(prefix="/api")
 MODELOS = ["u2netp", "u2net", "isnet-general-use", "birefnet-general", "bria-rmbg", "u2net_human_seg"]
 
 
-@app.get("/")
+@router.get("/")
 def root():
     """Informações da API."""
     return {
         "api": "RemoverBG",
         "version": "1.0.0",
-        "docs": "/docs",
+        "docs": "/api/docs",
         "endpoints": {
-            "POST /remove": "Envie imagem (form-data: file) - retorna PNG sem fundo",
-            "GET /health": "Status da API",
+            "POST /api/remove": "Envie imagem (form-data: file) - retorna PNG sem fundo",
+            "GET /api/health": "Status da API",
         },
     }
 
 
-@app.get("/health")
+@router.get("/health")
 def health():
     """Verifica se a API está online."""
     return {"status": "ok"}
 
 
-@app.post(
+@router.post(
     "/remove",
     response_class=Response,
     responses={
@@ -130,6 +131,9 @@ async def remove_background(
         media_type="image/png",
         headers={"Content-Disposition": "attachment; filename=removed_bg.png"},
     )
+
+
+app.include_router(router)
 
 
 def main():

@@ -1,2 +1,2 @@
-run = "python app.py"
-entrypoint = "app.py"
+run = "python main.py"
+entrypoint = "main.py"
