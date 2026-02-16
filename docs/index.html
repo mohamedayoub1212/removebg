@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RemoverBG - Remoção de Fundo</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 600px;
+      margin: 2rem auto;
+      padding: 1rem;
+      text-align: center;
+    }
+    h1 { color: #0d9488; }
+    .upload-zone {
+      border: 2px dashed #0d9488;
+      border-radius: 12px;
+      padding: 3rem;
+      margin: 1.5rem 0;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .upload-zone:hover, .upload-zone.dragover { background: #f0fdfa; }
+    .upload-zone input { display: none; }
+    .preview { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin: 1rem 0; }
+    .preview img { max-width: 250px; border-radius: 8px; }
+    button {
+      background: #0d9488;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      font-size: 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 1rem;
+    }
+    button:hover { background: #0f766e; }
+    button:disabled { opacity: 0.6; cursor: not-allowed; }
+    .status { margin-top: 1rem; color: #666; }
+    .error { color: #dc2626; }
+    a { color: #0d9488; }
+  </style>
+</head>
+<body>
+  <h1>🖼️ RemoverBG</h1>
+  <p>Remova o fundo de imagens usando IA</p>
+
+  <div class="upload-zone" id="zone" onclick="document.getElementById('file').click()">
+    <input type="file" id="file" accept="image/*">
+    <p>Clique ou arraste uma imagem aqui</p>
+  </div>
+
+  <div class="preview" id="preview"></div>
+
+  <button id="btn" disabled>Remover fundo</button>
+  <p class="status" id="status"></p>
+
+  <p style="margin-top: 2rem; font-size: 0.9rem; color: #666;">
+    Hospedado no GitHub Pages. A API precisa estar rodando em Render/Railway.
+    <br><a href="https://github.com/mohamadayoub192/removebg">Código no GitHub</a>
+  </p>
+
+  <script>
+    const zone = document.getElementById('zone');
+    const fileInput = document.getElementById('file');
+    const preview = document.getElementById('preview');
+    const btn = document.getElementById('btn');
+    const status = document.getElementById('status');
+
+    let selectedFile = null;
+
+    ['dragenter', 'dragover', 'drop'].forEach(ev => {
+      zone.addEventListener(ev, e => {
+        e.preventDefault();
+        zone.classList.toggle('dragover', ev !== 'drop');
+        if (ev === 'drop') {
+          const f = e.dataTransfer.files[0];
+          if (f && f.type.startsWith('image/')) handleFile(f);
+        }
+      });
+    });
+
+    fileInput.onchange = () => handleFile(fileInput.files[0]);
+
+    function handleFile(file) {
+      if (!file) return;
+      selectedFile = file;
+      preview.innerHTML = `<img src="${URL.createObjectURL(file)}" alt="Preview">`;
+      btn.disabled = false;
+      status.textContent = '';
+    }
+
+    btn.onclick = async () => {
+      if (!selectedFile) return;
+      btn.disabled = true;
+      status.textContent = 'Processando...';
+      status.classList.remove('error');
+
+      try {
+        // Opção 1: Se você tiver API no ar (Railway, Render, etc.)
+        const formData = new FormData();
+        formData.append('file', selectedFile);
+        formData.append('modelo', 'u2netp');
+
+        // Coloque aqui a URL da sua API (Render, Railway, etc.)
+        const apiUrl = 'SEU_LINK_DA_API_AQUI/remove';
+        const res = await fetch(apiUrl, { method: 'POST', body: formData });
+
+        if (!res.ok) throw new Error('Erro ao processar');
+
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        preview.innerHTML += `<img src="${url}" alt="Resultado">`;
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'sem_fundo.png';
+        a.textContent = 'Baixar resultado';
+        a.style.display = 'block';
+        a.style.marginTop = '0.5rem';
+        preview.appendChild(a);
+        status.textContent = 'Pronto!';
+      } catch (e) {
+        status.textContent = 'Configure a URL da API no código (linha apiUrl) ou use o app local.';
+        status.classList.add('error');
+      }
+      btn.disabled = false;
+    };
+  </script>
+</body>
+</html>

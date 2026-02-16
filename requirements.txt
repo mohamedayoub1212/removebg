@@ -1,0 +1,15 @@
+# Remoção de fundo com alta qualidade
+# Escolha UMA das opções abaixo conforme seu hardware:
+
+# CPU (funciona em qualquer computador)
+rembg[cpu]>=2.0.0
+Pillow>=10.0.0
+pillow-heif>=0.21.0
+gradio>=4.0.0
+fastapi>=0.100.0
+uvicorn>=0.22.0
+
+# GPU NVIDIA (descomente se tiver placa NVIDIA com CUDA)
+# rembg[gpu]>=2.0.0
+# Pillow>=10.0.0
+# gradio>=4.0.0
